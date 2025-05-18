@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bulk Electricity Bills</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400&display=swap");
+
+      body {
+        font-family: "Poppins", "Roboto", sans-serif;
+        margin: 0;
+        padding: 0;
+        line-height: 1.6;
+        background-color: #f4f4f4;
+      }
+
+      .container {
+        max-width: 700px;
+        margin: 30px auto;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+      }
+
+      .logo {
+        text-align: center;
+      }
+
+      .logo img {
+        max-width: 60px;
+      }
+
+      h1 {
+        font-size: 25px;
+        margin: 2px;
+        text-align: center;
+        color: #4a54e8;
+      }
+
+      hr {
+        border: 1px solid #ccc;
+        margin: 20px 0;
+      }
+      span {
+        font-size: 13px;
+        border: 1px solid #ccc; /* Add border at the top of each value */
+        padding: 5px; /* Add padding at the top of each value */
+      }
+
+      .bill-data span {
+        width: 45%;
+        display: inline-block;
+        margin-bottom: 5px;
+        color: #333;
+      }
+
+      .billing-calc h2 {
+        margin-bottom: 10px;
+        color: #4a54e8;
+      }
+
+      .calc-data-flex {
+        display: flex;
+        justify-content: space-between;
+        flex-direction: row;
+        gap: 5px;
+        color: #333;
+        border: 1px solid #ccc; /* Add border around the block */
+        padding: 10px; /* Add padding for spacing */
+      }
+
+      .grand-total {
+        margin-top: 20px;
+        text-align: left;
+        font-weight: bold;
+        color: #2e93f0;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+      }
+
+      .footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+      }
+
+      .notice {
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+        font-size: small;
+      }
+
+      .notice * {
+        margin: 0;
+      }
+
+      .info {
+        text-align: right;
+        font-size: small;
+        font-weight: bold;
+      }
+
+      .info p {
+        margin: 0;
+      }
+
+      .btn-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .bill-data-flex {
+        display: flex;
+        flex-direction: row;
+        /* flex-wrap: wrap; */
+        gap: 20px;
+        color: #333;
+        border: 1px solid #ccc; /* Add border around the block */
+        padding: 10px; /* Add padding for spacing */
+        justify-content: space-between;
+      }
+      .values {
+        border-top: #ccc 1px solid;
+      }
+      .field {
+        font-weight: bold;
+      }
+      .page-break {
+        page-break-before: always;
+      }
+      #downloadAllBtn {
+        background-color: #0066cc;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        font-size: 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        margin-top: 30px;
+      }
+
+      #downloadAllBtn:hover {
+        background-color: #0052a3;
+      }
+      @media screen and (max-width: 800px) {
+        .container {
+          margin: 30px;
+        }
+        .bill-data span,
+        .calc-data span {
+          width: 100%;
+        }
+        #downloadAllBtn {
+          font-size: 18px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="btn-container">
+      <button id="downloadAllBtn" onclick="downloadAllPDF()">
+        Download All Bills PDF
+      </button>
+    </div>
+    <hr class="btn-line" />
+    {% for bill in metered_bills %}
+    <div class="container">
+      <div class="logo">
+        <img
+          class="nitLogo"
+          src="{{ ASSETS_ROOT }}/img/nitsriLogo.png"
+          alt="Logo"
+        />
+      </div>
+      <h1 style="text-align: center">Department of EM&R</h1>
+      <h1 style="text-align: center">NIT Srinagar</h1>
+      <hr />
+      <div class="bill-data">
+        <span
+          ><b>Bill Number:</b> NITSGR-M&R{{ bill.metered_bill_id }}{{ bill.year}}-MHL</span
+        >
+        <span><b>Consumer Name:</b> {{ bill.full_name }}</span>
+        <span
+          ><b>Address:</b> {{ bill.quarter_type }}-{{ bill.room_number }}</span
+        >
+        <span><b>Department:</b> {{ bill.user_department }}</span>
+        <span><b>Metered:</b> YES</span>
+        <span><b>Meter Number:</b> {{ bill.meter_number }}</span>
+        <span><b>Bill Date:</b> {{ bill.issued_date }}</span>
+        <span><b>Bill Due Date:</b> {{ bill.due_date }}</span>
+        <span id="monthName"
+          ><b>Bill Month:</b>
+          {% if bill.month == 1 %}JAN{% endif %}
+          <!--  -->
+          {% if bill.month == 2 %}FEB{% endif %}
+          <!--  -->
+          {% if bill.month == 3 %}MAR{% endif %}
+          <!--  -->
+          {% if bill.month == 4 %}APR{% endif %}
+          <!--  -->
+          {% if bill.month == 5 %}MAY{% endif %}
+          <!--  -->
+          {% if bill.month == 6 %}JUN{% endif %}
+          <!--  -->
+          {% if bill.month == 7 %}JUL{% endif %}
+          <!--  -->
+          {% if bill.month == 8 %}AUG{% endif %}
+          <!--  -->
+          {% if bill.month == 9 %}SEP{% endif %}
+          <!--  -->
+          {% if bill.month == 10 %}OCT{% endif %}
+          <!--  -->
+          {% if bill.month == 11 %}NOV{% endif %}
+          <!--  -->
+          {% if bill.month == 12 %}DEC{% endif %}
+          <!--  -->
+        </span>
+      </div>
+      <hr />
+      <div class="bill-data-flex">
+        <span>
+          <div class="field">Rate Code:</div>
+          <div class="values">{{ bill.meter_rate_name }}</div>
+        </span>
+        <!--<span>
+          <div class="field">Flat factor:</div>
+          <div class="values">NA</div>
+        </span>-->
+        <span>
+          <div class="field">Multi factor:</div>
+          <div class="values">{{bill.mult_factor }}</div>
+        </span>
+        <!--<span>
+          <div class="field">Supply Type:</div>
+          <div class="values">HT</div>
+        </span>-->
+        <span>
+          <div class="field">Sanctioned Load (KW):</div>
+          <div class="values">{{ bill.sanctioned_load }}</div>
+        </span>
+        <span>
+          <div class="field">Previous Reading:</div>
+          <div class="values">{{ bill.previous_reading }}</div>
+        </span>
+        <span>
+          <div class="field">Current Reading:</div>
+          <div class="values">{{ bill.current_reading }}</div>
+        </span>
+        <span>
+          <div class="field">Total Units Consumed:</div>
+          <div class="values">{{ bill.units_consumed }}</div>
+        </span>
+      </div>
+      <div class="billing-calc">
+        <h2>Billing Calculations</h2>
+        <hr />
+        <div class="calc-data-flex">
+          <span>
+            <div class="field">Opening Balance (Rs):</div>
+            <div class="values">{{ bill.opening_balance }}</div>
+          </span>
+          <!--<span>
+            <div class="field">Meter line:</div>
+            <div class="values">LT</div>
+          </span>-->
+          <span>
+            <div class="field">Cost of Energy (Rs):</div>
+            <div class="values">{{ bill.energy_charges }}</div>
+          </span>
+          <span>
+            <div class="field">Demand Charges (Rs):</div>
+            <div class="values">{{ bill.demand_charges }}</div>
+          </span>
+          <span>
+            <div class="field">Electricity Charges (Rs):</div>
+            <div class="values">{{ bill.duty_charges }}</div>
+          </span>
+          <span>
+            <div class="field">Total Amount (Rs):</div>
+            <div class="values">{{ bill.total_bill }}</div>
+          </span>
+        </div>
+      </div>
+      <hr />
+      <div class="grand-total">Grand Total (Rs): {{ bill.total_bill }}</div>
+      <div class="footer">
+        <div class="notice">
+          <h3>NOTICE:</h3>
+          <p>Bill should be paid within 30 days.</p>
+        </div>
+        <div class="info">
+          <p>Department of EM&R</p>
+          <p>NIT Srinagar</p>
+        </div>
+      </div>
+    </div>
+    <div class="page-break"></div>
+    {% endfor %} {% for bill in unmetered_bills %}
+    <div class="container">
+      <div class="logo">
+        <img
+          class="nitLogo"
+          src="{{ ASSETS_ROOT }}/img/nitsriLogo.png"
+          alt="Logo"
+        />
+      </div>
+      <h1 style="text-align: center">Department of EM&R</h1>
+      <h1 style="text-align: center">NIT Srinagar</h1>
+      <hr />
+      <div class="bill-data">
+        <span
+          ><b>Bill Number:</b> NITSGR-M&R{{ bill.unmetered_bill_id }}{{ bill.year }}-MHL</span
+        >
+        <span><b>Consumer Name:</b> {{ bill.full_name }}</span>
+        <span
+          ><b>Address:</b> {{ bill.quarter_type }}-{{ bill.room_number }}</span
+        >
+        <span><b>Department:</b> {{ bill.user_department }}</span>
+        <span><b>Metered:</b> NO</span>
+        <span><b>Bill Date:</b> {{ bill.issued_date }}</span>
+        <span><b>Bill Due Date:</b> {{ bill.due_date }}</span>
+        <span id="monthName_unmetered"
+          ><b>Bill Month:</b>
+          {% if bill.month == 1 %}JAN{% endif %}
+          <!--  -->
+          {% if bill.month == 2 %}FEB{% endif %}
+          <!--  -->
+          {% if bill.month == 3 %}MAR{% endif %}
+          <!--  -->
+          {% if bill.month == 4 %}APR{% endif %}
+          <!--  -->
+          {% if bill.month == 5 %}MAY{% endif %}
+          <!--  -->
+          {% if bill.month == 6 %}JUN{% endif %}
+          <!--  -->
+          {% if bill.month == 7 %}JUL{% endif %}
+          <!--  -->
+          {% if bill.month == 8 %}AUG{% endif %}
+          <!--  -->
+          {% if bill.month == 9 %}SEP{% endif %}
+          <!--  -->
+          {% if bill.month == 10 %}OCT{% endif %}
+          <!--  -->
+          {% if bill.month == 11 %}NOV{% endif %}
+          <!--  -->
+          {% if bill.month == 12 %}DEC{% endif %}
+          <!--  -->
+        </span>
+      </div>
+      <hr />
+      <div class="bill-data-flex">
+        <span>
+          <div class="field">Rate Code:</div>
+          <div class="values">{{ bill.flat_rate_name }}</div>
+        </span>
+        <!--<span>
+          <div class="field">Flat factor:</div>
+          <div class="values">NA</div>
+        </span>-->
+        <span>
+          <div class="field">Multi factor:</div>
+          <div class="values">NA</div>
+        </span>
+        <!--<span>
+          <div class="field">Supply Type:</div>
+          <div class="values">HT</div>
+        </span>-->
+        <span>
+          <div class="field">Sanctioned Load (KW):</div>
+          <div class="values">{{ bill.sanctioned_load }}</div>
+        </span>
+        <span>
+          <div class="field">Previous Reading:</div>
+          <div class="values">NA</div>
+        </span>
+        <span>
+          <div class="field">Current Reading:</div>
+          <div class="values">NA</div>
+        </span>
+        <span>
+          <div class="field">Total Units Consumed:</div>
+          <div class="values">NA</div>
+        </span>
+      </div>
+      <div class="billing-calc">
+        <h2>Billing Calculations</h2>
+        <hr />
+        <div class="calc-data-flex">
+          <span>
+            <div class="field">Opening Balance (Rs):</div>
+            <div class="values">{{ bill.opening_balance }}</div>
+          </span>
+          <!--<span>
+            <div class="field">Meter line:</div>
+            <div class="values">LT</div>
+          </span>-->
+          <span>
+            <div class="field">Cost of Energy (Rs):</div>
+            <div class="values">{{ bill.energy_charges }}</div>
+          </span>
+          <span>
+            <div class="field">Demand Charges (Rs):</div>
+            <div class="values">{{ bill.demand_charges }}</div>
+          </span>
+          <span>
+            <div class="field">Total Amount (Rs):</div>
+            <div class="values">{{ bill.total_bill }}</div>
+          </span>
+        </div>
+      </div>
+      <hr />
+      <div class="grand-total">Grand Total (Rs): {{ bill.total_bill }}</div>
+      <div class="footer">
+        <div class="notice">
+          <h3>NOTICE:</h3>
+          <p>Bill should be paid within 30 days.</p>
+        </div>
+        <div class="info">
+          <p>Department of EM&R</p>
+          <p>NIT Srinagar</p>
+        </div>
+      </div>
+      <!--<hr class="btn-line" />
+      <div class="btn-container">
+        <button id="downloadBtn">Download Bill PDF</button>
+      </div>-->
+    </div>
+    <div class="page-break"></div>
+    {% endfor %}
+
+    <script>
+      function downloadAllPDF() {
+        const downloadButton = document.getElementById("downloadAllBtn");
+        downloadButton.style.display = "none";
+        document.querySelector(".btn-line").style.display = "none";
+
+        window.print();
+
+        downloadButton.style.display = "block";
+        document.querySelector(".btn-line").style.display = "block";
+      }
+    </script>
+  </body>
+</html>

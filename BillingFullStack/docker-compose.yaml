@@ -1,0 +1,47 @@
+services:
+  billingsite:
+    build: .
+    command: bash -c "python manage.py makemigrations &&
+                      python manage.py migrate &&
+                      python manage.py collectstatic --noinput &&
+                      python manage.py custom_csu --username ${DJANGO_SU_USERNAME} $( [ -n '${DJANGO_SU_EMAIL}' ] && echo '--email ${DJANGO_SU_EMAIL}' ) --password ${DJANGO_SU_PASSWORD} &&
+                      python manage.py app_init --username ${DJANGO_SU_USERNAME} &&
+                      gunicorn --config gunicorn/config.py --bind 0.0.0.0:${GUNICORN_PORT} mysite.wsgi:application"
+    volumes:
+      - static_volume:/home/app/billing/static
+    expose:
+      - ${GUNICORN_PORT}
+    env_file:
+      - .env
+    depends_on:
+      - billingdb
+    restart: unless-stopped
+
+  billingtatic:
+    build: ./nginx
+    ports:
+      - "${NGINX_PORT}:80"
+    env_file:
+      - .env
+    volumes:
+      - static_volume:/home/app/billing/static
+    depends_on:
+      - billingsite
+    restart: unless-stopped
+
+  billingdb:
+    image: postgres:alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGPORT: ${DB_PORT}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - .env
+    restart: unless-stopped
+
+volumes:
+  static_volume:
+  postgres_data:

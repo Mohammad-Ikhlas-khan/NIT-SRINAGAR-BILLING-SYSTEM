@@ -1,0 +1,343 @@
+{% extends "layouts/base.html" %} {% block title %}Add Address{% endblock %}
+
+<!-- Specific Page CSS goes HERE -->
+{% block stylesheets %}
+<style>
+  .main-panel > .content {
+    padding: 0;
+  }
+  .container {
+    min-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  .row {
+    margin: 0;
+  }
+  .offset-md-3 {
+    margin-left: 0;
+  }
+  .card {
+    min-height: calc(100vh - 270px);
+    left: 300px;
+    min-width: calc(100vw - 400px);
+    margin-block: 0;
+  }
+  .card * {
+    font-size: large;
+  }
+  .card .title {
+    font-size: 2rem;
+  }
+  .card label {
+    font-size: 1rem;
+  }
+  .form-control {
+    height: calc(3rem + 2px);
+  }
+  select option {
+    color: black;
+  }
+  select option:checked {
+    color: rgb(0, 228, 0);
+  }
+
+  #notification-bar {
+    font-size: large;
+    font-weight: bolder;
+    position: fixed;
+    top: -100%;
+    left: 25%;
+    width: 50%;
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+    z-index: 9999;
+    border-radius: 10px;
+    transition: 0.5s;
+  }
+  #notification-bar.show{
+    top: 10px;
+  }
+  /*.hidden {
+    display: none;
+  }*/
+  .success {
+    background-color: #4caf50;
+  }
+  .error {
+    background-color: #f44336;
+  }
+
+  @media screen and (max-width: 992px) {
+    .card {
+      min-width: calc(100vw - 30px);
+      left: 0;
+    }
+  }
+  @media screen and (max-width: 576px) {
+    .card * {
+      font-size: medium;
+    }
+    .card .title {
+      font-size: 1.6rem;
+    }
+    .card label {
+      font-size: 0.8rem;
+    }
+    .form-control {
+      height: calc(2.7rem + 2px);
+    }
+    #notification-bar {
+    font-size: medium;
+    left: 10%;
+    width: 80%;
+    padding: 10px;
+  }
+  }
+</style>
+
+{% endblock %} {% block content %}
+<div id="notification-bar"></div>
+
+<div class="content">
+  <div class="container">
+    <div class="row pt-5">
+      <div class="col-md-6 mt-5 offset-md-3 pt-5 mt-5">
+        <div class="card">
+          <div class="card-header text-center py-4">
+            <h4 class="title">Add Address</h4>
+          </div>
+
+          <form role="form" method="post" action="{% url 'create-room' %}">
+            {% csrf_token %}
+            <div class="card-body px-5 py-3">
+              <div class="form-row">
+
+                <div class="form-group col-md-6">
+                  <label for="id_access">Address Type</label>
+                  <select
+                    class="form-control"
+                    id="id_access"
+                    name="quarter_type"
+                  >
+                    {% for value in quarterType %}
+                    <option value="{{ value }}">{{ value }}</option>
+                    {% endfor %}
+                  </select>
+                  <span class="text-danger"></span>
+                </div>
+
+                <div class="form-group col-md-6">
+                  <label for="id_room_id">Address Number</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="id_room_id"
+                    name="room_number"
+                  />
+                  <span class="text-danger"></span>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="id_user_type">Metering Type</label>
+                  <select
+                    class="form-control"
+                    id="id_user_type"
+                    name="room_type"
+                    onchange="toggleFields()"
+                  >
+                    <option value="metered">Metered</option>
+                    <option value="un-metered">Un-metered</option>
+                  </select>
+                  <span class="text-danger"></span>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="id_sanctioned_load">Sanctioned Load</label>
+                  <input
+                  type="text" 
+                  inputmode="decimal" 
+                  pattern="[0-9]*[.,]?[0-9]*"
+                    class="form-control"
+                    id="id_sanctioned_load"
+                    name="sanctioned_load"
+                  />
+                  <span class="text-danger"></span>
+                </div>
+              </div>
+              <div class="form-row">
+
+                <div class="form-group col-md-6" id="initialReadingRow">
+                    <label for="id_room_id">Initial Reading</label>
+                    <input
+                    type="text"
+                     inputmode="decimal" 
+                    pattern="[0-9]*[.,]?[0-9]*"
+                      class="form-control"
+                      id="id_room_id"
+                      name="initial_reading"
+                    />
+                    <span class="text-danger"></span>
+                </div>
+
+
+                <div class="form-group col-md-6"  id="multiplicationFactorRow">
+                    <label for="id_mult_factor">Multiplication Factor</label>
+                    <input
+                     type="text" 
+                     inputmode="decimal" 
+                     pattern="[0-9]*[.,]?[0-9]*"
+                      class="form-control"
+                      id="id_mult_factor"
+                      name="mult_factor"
+                    />
+                    <span class="text-danger"></span>
+                </div>
+             </div>
+              <div class="form-row" id="meterRateRow">
+                <div class="form-group col-md-6">
+                  <label for="id_meter_rate">Meter Rate</label>
+                  <select
+                    class="form-control"
+                    id="id_meter_rate"
+                    name="meter_rate"
+                  >
+                    {% for value in meterRate %}
+                    <option value="{{ value }}">{{ value }}</option>
+                    {% endfor %}
+                  </select>
+                  <span class="text-danger"></span>
+                </div>
+              </div>
+
+              <div class="form-row" id="flatRateRow" style="display: none">
+                <div class="form-group col-md-6">
+                  <label for="id_flat_rate">Flat Rate</label>
+                  <select
+                    class="form-control"
+                    id="id_flat_rate"
+                    name="flat_rate"
+                  >
+                    {% for value in flatRate %}
+                    <option value="{{ value }}">{{ value }}</option>
+                    {% endfor %}
+                  </select>
+                  <span class="text-danger"></span>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer text-center">
+              <button type="submit" class="btn btn-fill btn-primary">
+                Add Address
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE -->
+{% block javascripts %}
+<script>
+  function toggleFields() {
+    const userSelect = document.getElementById("id_user_type");
+    const multFactor = document.getElementById("multiplicationFactorRow");
+    const initialReadingRow = document.getElementById("initialReadingRow");
+    const meterRateRow = document.getElementById("meterRateRow");
+    const flatRateRow = document.getElementById("flatRateRow");
+
+    if (userSelect.value === "metered") {
+      initialReadingRow.style.display = "block";
+      multFactor.style.display = "block";
+      meterRateRow.style.display = "block";
+      flatRateRow.style.display = "none";
+    } else if (userSelect.value === "un-metered") {
+      initialReadingRow.style.display = "none";
+      multFactor.style.display = "none";
+      meterRateRow.style.display = "none";
+      flatRateRow.style.display = "block";
+    }
+  }
+
+  window.onload = function() {
+    var messages = [
+      {% for msg in messages %}
+        "{{ msg }}"
+      {% endfor %}
+    ];
+    let tags =  [{% for msg in messages %}
+        "{{ msg.tags }}"
+      {% endfor %}]
+    if (messages.length === 0) {
+      return;
+    }
+
+    let tag = tags.join('\n')
+    var messageText = messages.join('\n');
+    //console.log(tag)
+    //alert(messageText);
+
+    const notificationBar = document.getElementById("notification-bar");
+
+        function showNotification(tag, message) {
+          notificationBar.textContent = message;
+          notificationBar.classList.add(tag);
+          notificationBar.classList.add("show");
+          setTimeout(function () {
+            hideNotification();
+          }, 3000);
+        }
+
+
+        function hideNotification() {
+          notificationBar.textContent = "";
+          notificationBar.classList.remove("show","success", "error");
+        }
+
+        if (tag.toLowerCase() == "success") {
+          showNotification("success", messageText);
+        }
+
+        if (tag.toLowerCase() == "error") {
+          showNotification("error", messageText);
+        }
+
+  };
+
+//  document.addEventListener("DOMContentLoaded", function () {
+//    const notificationBar = document.getElementById("notification-bar");
+//
+//    function showNotification(status, message) {
+//      notificationBar.textContent = message;
+//      notificationBar.classList.add(status);
+//      notificationBar.classList.remove("hidden");
+//      setTimeout(function () {
+//        hideNotification();
+//      }, 3000);
+//    }
+//
+//
+//    function hideNotification() {
+//      notificationBar.textContent = "";
+//      notificationBar.classList.remove("success", "error");
+//      notificationBar.classList.add("hidden");
+//    }
+//
+//    const successMessage = "{{ success_message }}";
+//    const errorMessage = "{{ error_message }}";
+//
+//    if (successMessage.trim() !== "") {
+//      showNotification("success", successMessage.trim());
+//    }
+//
+//    if (errorMessage.trim() !== "") {
+//      showNotification("error", errorMessage.trim());
+//    }
+//  });
+</script>
+
+{% endblock javascripts %}

@@ -1,0 +1,227 @@
+{% extends "layouts/base.html" %} {% block title %}Update Reading{% endblock %}
+
+<!-- Specific Page CSS goes HERE -->
+{% block stylesheets %}
+<style>
+  .main-panel > .content {
+    padding: 0;
+  }
+  .container {
+    min-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  .row {
+    margin: 0;
+  }
+  .offset-md-3 {
+    margin-left: 0;
+  }
+  .card {
+    min-height: calc(100vh - 270px);
+    left: 300px;
+    min-width: calc(100vw - 400px);
+    margin-block: 0;
+  }
+  .card * {
+    font-size: large;
+  }
+  .card .title {
+    font-size: 2rem;
+  }
+  .card label {
+    font-size: 1rem;
+  }
+  .form-control {
+    height: calc(3rem + 2px);
+  }
+  select option {
+    color: black;
+  }
+  select option:checked {
+    color: rgb(0, 228, 0);
+  }
+
+  @media screen and (max-width: 992px) {
+    .card {
+      left: 200px;
+    }
+  }
+  @media screen and (max-width: 768px) {
+    .card {
+      left: 0;
+    }
+  }
+  @media screen and (max-width: 576px) {
+    .card * {
+      font-size: medium;
+    }
+    .card .title {
+      font-size: 1.6rem;
+    }
+    .card label {
+      font-size: 0.8rem;
+    }
+    .form-control {
+      height: calc(2.7rem + 2px);
+    }
+  }
+</style>
+
+{% endblock %} {% block content %}
+
+
+<div class="content">
+  <div class="container">
+    <div class="row pt-5">
+      <div class="col-md-6 mt-5 offset-md-3 pt-5 mt-5">
+        <div class="card">
+          <div class="card-header text-center py-4">
+            <h4 class="title">Update Reading</h4>
+          </div>
+
+          <form role="form" method="post" action="{%url 'update-reading' %}">
+            {% csrf_token %}
+            <input
+              type="hidden"
+              name="reading_id"
+              value="{{ reading.reading_id }}"
+            />
+            <div class="card-body px-5 py-3">
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="id_room_id">Address Number</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="id_room_id"
+                    name="room_id"
+                    value="{{room_number}}"
+                    readonly
+                  />
+                  <span class="text-danger"></span>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="id_room_type">Address Type</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="id_room_type"
+                    name="room_type"
+                    value="{{quarter_type}}"
+                    readonly
+                  />
+                  <span class="text-danger"></span>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="id_month">Month</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="id_month"
+                    name="month"
+                    value="{{reading.month}}"
+                    readonly
+                  />
+                  <span class="text-danger"></span>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="id_year">Year</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="id_year"
+                    name="year"
+                    value="{{reading.year}}"
+                    readonly
+                  />
+                  <span class="text-danger"></span>
+                </div>
+              </div>
+
+
+
+
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="id_prev_reading">Previous Reading</label>
+                  <input
+                  type="text" 
+                  inputmode="decimal" 
+                  pattern="[0-9]*[.,]?[0-9]*"
+                    class="form-control"
+                    id="id_prev_reading"
+                    name="prev_reading"
+                    value="{{prev_reading}}"
+                    readonly
+                  />
+                  <span class="text-danger"></span>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="id_curr_reading">Current Reading</label>
+                  <input
+                  type="text" 
+                  inputmode="decimal" 
+                  pattern="[0-9]*[.,]?[0-9]*"
+                    class="form-control"
+                    id="id_curr_reading"
+                    name="curr_reading"
+                    value="{{curr_reading}}"
+                  />
+                  <span class="text-danger"></span>
+                </div>
+              </div>
+
+
+
+
+
+              <div class="form-row" id="units_row">
+                <div class="form-group col-md-6">
+                  <label for="id_units">Units</label>
+                  <input
+                  type="text" 
+                  inputmode="decimal" 
+                  pattern="[0-9]*[.,]?[0-9]*"
+                    class="form-control"
+                    id="id_units"
+                    name="units_consumed"
+                    value="{{reading.units_consumed}}"
+                    readonly
+                  />
+                  <span class="text-danger"></span>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer text-center">
+              <button type="submit" class="btn btn-fill btn-primary">
+                Update Reading
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE -->
+{% block javascripts %}
+<script>
+
+unitsConsumed = document.getElementById("id_units");
+initalReading = document.getElementById("id_prev_reading");
+finalReading = document.getElementById("id_curr_reading");
+
+
+finalReading.addEventListener("change", function () {
+  unitsConsumed.value = finalReading.value - initalReading.value;
+});
+
+
+</script>
+
+{% endblock javascripts %}

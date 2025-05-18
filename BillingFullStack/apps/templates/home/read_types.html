@@ -1,0 +1,607 @@
+{% extends "layouts/base.html" %} {% block title %}Dept & Qtr Types {%endblock%}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<style>
+  .main-panel .content {
+    min-height: calc(100vh - 125px);
+  }
+  .navbar.navbar-absolute {
+    z-index: 100000;
+  }
+  .card-body i {
+    color: #9a9a9a;
+    font-size: 1.4em;
+  }
+
+  .card-body i:hover {
+    color: #575757;
+  }
+
+  .table > tbody > tr > .button-td,
+  .white-content .table > tbody > tr > .button-td {
+    width: 4rem;
+    padding: 5px 0px;
+  }
+
+  .tooltip-inner {
+    font-size: 10.5px;
+    padding: 5px 10px;
+  }
+
+  .tooltip {
+    border-radius: 4px;
+  }
+
+  #notification-bar {
+    font-size: large;
+    font-weight: bolder;
+    position: fixed;
+    top: -100%;
+    left: 25%;
+    width: 50%;
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+    z-index: 9999;
+    border-radius: 10px;
+    transition: 0.5s;
+  }
+  #notification-bar.show{
+    top: 10px;
+  }
+
+  .success {
+    background-color: #4caf50;
+  }
+
+  .error {
+    background-color: #f44336;
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .btn-primary {
+    /*padding: 10px 20px;*/
+    margin: 0 20px;
+  }
+  .footer {
+    padding: 0;
+  }
+  .footer .nav {
+    padding-left: 0;
+  }
+  .footer .copyright {
+    padding-right: 0;
+  }
+
+  #add-department-container *,
+  #add-quarter-type-container * , #edit-department-container *, #edit-quarter-type-container *{
+    margin-block: 10px;
+  }
+
+  @media screen and (max-width: 500px) {
+    .btn-primary {
+      font-size: 12px;
+      padding: 8px 18px;
+      margin: 0 10px 0 0;
+    }
+    #add-department-container input,
+    #add-quarter-type-container input,#edit-department-container input, #edit-quarter-type-container input {
+      width: 150px;
+    }
+    #notification-bar {
+    font-size: medium;
+    left: 10%;
+    width: 80%;
+    padding: 10px;
+  }
+  }
+  @media screen and (max-width: 385px) {
+    .card-header {
+      align-items: start;
+      flex-direction: column;
+    }
+  }
+
+  body {
+    counter-reset: Serial;
+  }
+
+  /*table
+  {
+      border-collapse: separate;
+  }*/
+
+  .departmentTable {
+    counter-reset: departmentSerial;
+  }
+
+  .quarterTypeTable {
+    counter-reset: quarterTypeSerial;
+  }
+
+  /* Increment and display the serial numbers */
+  .departmentTable tr td.departmentSerial:before {
+    counter-increment: departmentSerial;
+    content: counter(departmentSerial);
+  }
+
+  .quarterTypeTable tr td.quarterTypeSerial:before {
+    counter-increment: quarterTypeSerial;
+    content: counter(quarterTypeSerial);
+  }
+</style>
+{% endblock %} {% block content %}
+<div id="notification-bar"></div>
+
+<div class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="content">
+        <!--Departments start from here -->
+
+        <div class="row">
+          <div class="col-lg-6 col-md-12">
+            <div class="card">
+              <div class="card-header">
+                <h4 class="card-title">List of Departments</h4>
+                {% if user_role == 'admin' %}
+                <button
+                  type=""
+                  class="btn btn-fill btn-primary"
+                  id="add-department-btn"
+                >
+                  Add Department
+                </button>
+                <div id="add-department-container" style="display: none">
+                  <input
+                    type="text"
+                    id="new-department-input"
+                    placeholder="Enter Department Name"
+                  />
+                  <button
+                    type="button"
+                    class="btn btn-primary add-department-button"
+                    id="add-department-button"
+                  >
+                    Add
+                  </button>
+                </div>
+                <!-- Edit Department Form (hidden by default) -->
+                  <div id="edit-department-container" style="display: none">
+                    <form role="form" method="post" action="{% url 'update-department' %}">
+                      {% csrf_token %}
+                        <input type="hidden" name="department_id" id="edit-department-id">
+                        <input
+                            type="text"
+                            id="updated-department-input"
+                            placeholder="Enter New Name for Department"
+                            name="department_name"
+                        />
+                        <button
+                            type="submit"
+                            class="btn btn-primary edit-department-button"
+                            id="edit-department-button"
+                        >
+                            Update
+                        </button>
+                    </form>
+                  </div>
+                
+                {% endif %}
+              </div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table tablesorter departmentTable" id="">
+                    <thead class="text-primary">
+                      <tr>
+                        <th class="text-center">S No.</th>
+                        <th class="text-center">Department Name</th>
+                        {% if user_role == 'admin' %}
+                        <th class="text-center">Delete</th>
+                        {% endif %}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for department in departments %}
+                      <tr>
+                        <td class="text-center departmentSerial"></td>
+                        <td class="text-center">
+                          {{ department.department_name }}
+                        </td>
+                        {% if user_role == 'admin' %}
+                        
+                        <td class="td-actions button-td text-center">
+                          <button
+                              type="button"
+                              class="btn btn-link edit-button-department"
+                              data-department-id="{{department.department_id}}"
+                              data-department-name="{{department.department_name}}"
+                              data-toggle="tooltip"
+                              title="Edit Department"
+                          >
+                              <i class="tim-icons icon-pencil"></i>
+                          </button>
+                      </td>
+                        <td class="td-actions button-td text-center">
+                          <button
+                            type="button"
+                            class="btn btn-link delete-button-department"
+                            data-department-id="{{department.department_id}}"
+                            data-toggle="tooltip"
+                            title="Delete Department"
+                          >
+                            <i class="tim-icons icon-trash-simple"></i>
+                          </button>
+                        </td>
+                        {% endif %}
+                      </tr>
+                      {%endfor%}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!--Quarter types start from here -->
+
+          <div class="col-lg-6 col-md-12">
+            <div class="card">
+              <div class="card-header">
+                <h4 class="card-title">List of Address Types</h4>
+                {% if user_role == 'admin' %}
+                <button
+                  type="button"
+                  class="btn btn-fill btn-primary"
+                  id="add-quarter-type-btn"
+                >
+                  Add Address Type
+                </button>
+                <div id="add-quarter-type-container" style="display: none">
+                  <input
+                    type="text"
+                    id="new-quarter-type-input"
+                    placeholder="Enter Address Type"
+                  />
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    id="add-quarter-type-button"
+                  >
+                    Add
+                  </button>
+                </div>
+
+                <div id="edit-quarter-type-container" style="display: none">
+                  <form role="form" method="post" action="{% url 'update-quarter-type' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="quarter_id" id="edit-quarter-id">
+                    <input
+                      type="text"
+                      id="updated-quarter-input"
+                      placeholder="Enter New Name for Address Type"
+                      name="quarter_name"
+                    />
+                    <button
+                      type="submit"
+                      class="btn btn-primary edit-quarter-type-button"
+                      id="edit-quarter-type-button"
+                    >
+                      Update
+                    </button>
+                  </form>
+                </div>
+          
+                {% endif %}
+              </div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table tablesorter quarterTypeTable" id="">
+                    <thead class="text-primary">
+                      <tr>
+                        <th class="text-center">S No.</th>
+                        <th class="text-center">Address Types</th>
+                        {% if user_role == 'admin' %}
+                        <th class="text-center">Delete</th>
+                        {% endif %}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for quarterType in quarterTypes %}
+                      <tr>
+                        <td class="text-center quarterTypeSerial"></td>
+                        <td class="text-center">
+                          {{ quarterType.quarter_name }}
+                        </td>
+                        {% if user_role == 'admin' %}
+                        <td class="td-actions button-td text-center">
+                          <button
+                              type="button"
+                              class="btn btn-link edit-button-quarter-type"
+                              data-quarter-id="{{quarterType.quarter_id}}"
+                              data-quarter-name="{{quarterType.quarter_name}}"
+                              data-toggle="tooltip"
+                              title="Edit Address Type"
+                          >
+                              <i class="tim-icons icon-pencil"></i>
+                          </button>
+                      </td>
+                        <td class="td-actions button-td text-center">
+                          <button
+                            type="button"
+                            class="btn btn-link delete-button-quarter-type"
+                            data-quarter-id="{{quarterType.quarter_id}}"
+                            data-toggle="tooltip"
+                            title="Delete Address Type"
+                          >
+                            <i class="tim-icons icon-trash-simple"></i>
+                          </button>
+                        </td>
+                        {% endif %}
+                      </tr>
+                      {%endfor%}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% endblock content %}
+
+      <!-- Specific Page JS goes HERE -->
+      {% block javascripts %}
+      <script>
+
+        $(document).ready(function () {
+          $('[data-toggle="tooltip"]').tooltip();
+
+            // Edit Departments
+            $(".edit-button-department").click(function () {
+                var departmentId = $(this).data("department-id");
+                var departmentName = $(this).data("department-name");
+
+                $("#edit-department-id").val(departmentId);
+                $("#updated-department-input").val(departmentName);
+
+                $("#edit-department-container").css("display", "block");
+            });
+
+
+          // Edit quarter types
+          $(".edit-button-quarter-type").click(function () {
+            var quarterId = $(this).data("quarter-id");
+            var quarterName = $(this).data("quarter-name");
+            $("#edit-quarter-id").val(quarterId);
+            $("#updated-quarter-input").val(quarterName);
+            $("#edit-quarter-type-container").css("display", "block");
+          });
+
+
+          //  delete department
+          $(".delete-button-department").click(function () {
+            var departmentId = $(this).data("department-id");
+            if (confirm("Are you sure you want to delete this department?")) {
+              $.ajax({
+                url: "{% url 'delete_department' %}",
+                type: "POST",
+                data: {
+                  department_id: departmentId,
+                  csrfmiddlewaretoken: "{{ csrf_token }}",
+                },
+                success: function (response) {
+                  location.reload();
+                },
+                error: function (xhr, status, error) {
+                  console.error(error);
+                  alert("Error deleting department. Please try again.");
+                },
+              });
+            }
+          });
+
+          //  delete quarter
+          $(".delete-button-quarter-type").click(function () {
+            var quarterTypeId = $(this).data("quarter-id");
+            if (confirm("Are you sure you want to delete this quarter type?")) {
+              $.ajax({
+                url: "{% url 'delete_quarter_type' %}",
+                type: "POST",
+                data: {
+                  quarter_id: quarterTypeId,
+                  csrfmiddlewaretoken: "{{ csrf_token }}",
+                },
+                success: function (response) {
+                  location.reload();
+                },
+                error: function (xhr, status, error) {
+                  console.log(quarterTypeId);
+                  console.error(error);
+                  alert("Error deleting quarter type. Please try again.");
+                },
+              });
+            }
+          });
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+          //JS for adding department
+          const addDepartmentBtn =
+            document.getElementById("add-department-btn");
+          const addDepartmentContainer = document.getElementById(
+            "add-department-container"
+          );
+          const newDepartmentInput = document.getElementById(
+            "new-department-input"
+          );
+          const addDepartmentButton = document.getElementById(
+            "add-department-button"
+          );
+
+          addDepartmentBtn.addEventListener("click", function () {
+            if (addDepartmentContainer.style.display == "none") {
+              addDepartmentContainer.style.display = "block";
+            } else {
+              addDepartmentContainer.style.display = "none";
+            }
+          });
+
+          addDepartmentButton.addEventListener("click", function () {
+            const newDepartmentName = newDepartmentInput.value.trim();
+            if (newDepartmentName !== "") {
+              addDepartmentButton.dataset.departmentName = newDepartmentName;
+
+              // AJAX request to add the department
+              const csrfToken = "{{ csrf_token }}";
+              const url = "{% url 'add_department' %}";
+              const data = {
+                department_name: newDepartmentName,
+                csrfmiddlewaretoken: csrfToken,
+              };
+
+              fetch(url, {
+                method: "POST",
+                body: new URLSearchParams(data),
+                headers: {
+                  "Content-Type": "application/x-www-form-urlencoded",
+                },
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  if (data.success) {
+                    console.log("Department added successfully");
+                    addDepartmentContainer.style.display = "none";
+                    newDepartmentInput.value = "";
+                    location.reload();
+                  } else {
+                    console.error("Department adding failed");
+                  }
+                })
+                .catch((error) => {
+                  addDepartmentContainer.style.display = "none";
+                  newDepartmentInput.value = "";
+                  location.reload();
+                  console.error("An error occurred:", error);
+                });
+            }
+          });
+
+          //JS for adding quarter type
+          const addQuarterTypeBtn = document.getElementById(
+            "add-quarter-type-btn"
+          );
+          const addQuarterTypeContainer = document.getElementById(
+            "add-quarter-type-container"
+          );
+          const newQuarterTypeInput = document.getElementById(
+            "new-quarter-type-input"
+          );
+          const addQuarterTypeButton = document.getElementById(
+            "add-quarter-type-button"
+          );
+
+          addQuarterTypeBtn.addEventListener("click", function () {
+            if (addQuarterTypeContainer.style.display == "none") {
+              addQuarterTypeContainer.style.display = "block";
+            } else {
+              addQuarterTypeContainer.style.display = "none";
+            }
+          });
+
+          addQuarterTypeButton.addEventListener("click", function () {
+            const newQuarterType = newQuarterTypeInput.value.trim();
+            if (newQuarterType !== "") {
+              // AJAX request to add the quarter type
+              const csrfToken = "{{ csrf_token }}";
+              const url = "{% url 'add_quarter_type' %}";
+              const data = {
+                quarter_name: newQuarterType,
+                csrfmiddlewaretoken: csrfToken,
+              };
+
+              fetch(url, {
+                method: "POST",
+                body: new URLSearchParams(data),
+                headers: {
+                  "Content-Type": "application/x-www-form-urlencoded",
+                },
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  if (data.success) {
+                    console.log("Quarter type added successfully");
+                    addQuarterTypeContainer.style.display = "none";
+                    newQuarterTypeInput.value = "";
+                    location.reload();
+                  } else {
+                    console.error("Quarter type adding failed");
+                  }
+                })
+                .catch((error) => {
+                  addQuarterTypeContainer.style.display = "none";
+                  newQuarterTypeInput.value = "";
+                  location.reload();
+                  console.error("An error occurred:", error);
+                });
+            }
+          });
+
+       
+        });
+        window.onload = function() {
+    var messages = [
+      {% for msg in messages %}
+        "{{ msg }}"
+      {% endfor %}
+    ];
+    let tags =  [{% for msg in messages %}
+        "{{ msg.tags }}"
+      {% endfor %}]
+    if (messages.length === 0) {
+      return;
+    }
+
+    let tag = tags.join('\n')
+    var messageText = messages.join('\n');
+    //console.log(tag)
+    //alert(messageText);
+
+    const notificationBar = document.getElementById("notification-bar");
+
+        function showNotification(tag, message) {
+          notificationBar.textContent = message;
+          notificationBar.classList.add(tag);
+          notificationBar.classList.add("show");
+          setTimeout(function () {
+            hideNotification();
+          }, 3000);
+        }
+
+
+        function hideNotification() {
+          notificationBar.textContent = "";
+          notificationBar.classList.remove("show","success", "error");
+        }
+
+        if (tag.toLowerCase() == "success") {
+          showNotification("success", messageText);
+        }
+
+        if (tag.toLowerCase() == "error") {
+          showNotification("error", messageText);
+        }
+
+  };
+      </script>
+      {% endblock %}
+    </div>
+  </div>
+</div>
