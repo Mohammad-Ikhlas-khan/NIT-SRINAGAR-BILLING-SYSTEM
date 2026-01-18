@@ -9,13 +9,13 @@
 #### HTTPS
 
 ```bash
-git clone https://github.com/Mohammad-Ikhlas-khan/NIT-SRINAGAR-BILLING-SYSTEM/blob/main/README.md
+git clone https://github.com/Mohammad-Ikhlas-khan/NIT-SRINAGAR-BILLING-SYSTEM
 ```
 
 #### SSH
 
 ```bash
-git clone git@github.com:Mohammad-Ikhlas-khan/NIT-SRINAGAR-BILLING-SYSTEM/blob/main/README.md
+git clone git@github.com:Mohammad-Ikhlas-khan/NIT-SRINAGAR-BILLING-SYSTEM
 ```
 
 ### Change directory to project folder
@@ -51,13 +51,13 @@ docker compose -p billing-app down
 ##### HTTPS
 
 ```bash
-git clone https://github.com/Mohammad-Ikhlas-khan/NIT-SRINAGAR-BILLING-SYSTEM/blob/main/README.md
+git clone https://github.com/Mohammad-Ikhlas-khan/NIT-SRINAGAR-BILLING-SYSTEM
 ```
 
 ##### SSH
 
 ```bash
-git clone git@github.com:Mohammad-Ikhlas-khan/NIT-SRINAGAR-BILLING-SYSTEM/blob/main/README.md
+git clone git@github.com:Mohammad-Ikhlas-khan/NIT-SRINAGAR-BILLING-SYSTEM
 ```
 
 #### Change directory to project folder
